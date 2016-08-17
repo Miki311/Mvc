@@ -1,4 +1,8 @@
-﻿using System.Threading.Tasks;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Filters;
 
@@ -10,6 +14,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         public MiddlewareFilter(RequestDelegate requestDelegate)
         {
+            if (requestDelegate == null)
+            {
+                throw new ArgumentNullException(nameof(requestDelegate));
+            }
+
             _requestDelegate = requestDelegate;
         }
 
@@ -25,13 +34,12 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         {
             var httpContext = context.HttpContext;
 
-            httpContext.Items.Add(
-                typeof(ResourceFilterContext),
-                new ResourceFilterContext()
-                {
-                    ResourceExecutionDelegate = next,
-                    ResourceExecutingContext = context
-                });
+            var feature = new MiddlewareFilterFeature()
+            {
+                ResourceExecutionDelegate = next,
+                ResourceExecutingContext = context
+            };
+            context.HttpContext.Features.Set<IMiddlewareFilterFeature>(feature);
 
             return _requestDelegate(httpContext);
         }

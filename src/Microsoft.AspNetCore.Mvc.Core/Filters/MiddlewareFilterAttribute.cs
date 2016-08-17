@@ -1,12 +1,14 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.DependencyInjection;
-using System.Reflection;
 
 namespace Microsoft.AspNetCore.Mvc.Core.Filters
 {
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
     public class MiddlewareFilterAttribute : Attribute, IFilterFactory, IOrderedFilter
     {
         public MiddlewareFilterAttribute(Type type)
@@ -14,12 +16,6 @@ namespace Microsoft.AspNetCore.Mvc.Core.Filters
             if (type == null)
             {
                 throw new ArgumentNullException(nameof(type));
-            }
-
-            if (!typeof(IMiddlewarePipelineProvider).GetTypeInfo().IsAssignableFrom(type))
-            {
-                throw new ArgumentException(
-                    $"Supplied type {type} must implement {typeof(IMiddlewarePipelineProvider).ToString()}");
             }
 
             ImplementationType = type;
@@ -38,7 +34,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Filters
                 throw new ArgumentNullException(nameof(serviceProvider));
             }
 
-            var middlewarePipelineService = serviceProvider.GetRequiredService<MiddlewarePipelineBuilderService>();
+            var middlewarePipelineService = serviceProvider.GetRequiredService<MiddlewareFilterBuilderService>();
             var pipeline = middlewarePipelineService.GetPipeline(ImplementationType);
 
             return new MiddlewareFilter(pipeline);

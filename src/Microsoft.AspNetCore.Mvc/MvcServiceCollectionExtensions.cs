@@ -52,8 +52,6 @@ namespace Microsoft.Extensions.DependencyInjection
 
             builder.AddCors();
 
-            services.AddSingleton<MiddlewarePipelineBuilderService>();
-
             return new MvcBuilder(builder.Services, builder.PartManager);
         }
 

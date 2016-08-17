@@ -3,8 +3,10 @@
 
 using System;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Core.Filters;
+using Microsoft.Extensions.Logging;
 
 namespace MvcSandbox.Controllers
 {
@@ -32,35 +34,54 @@ namespace MvcSandbox.Controllers
         }
     }
 
-    public class Pipeline1 : IMiddlewarePipelineProvider
+    [MiddlewareFilter(typeof(Pipeline1))]
+    public class FilterConcatController : Controller
     {
-        public void Configure(IApplicationBuilder applicationBuilder)
+        [MiddlewareFilter(typeof(Pipeline2))]
+        public IActionResult Index()
+        {
+            return Content("FilterConcat.Index");
+        }
+    }
+    public class Pipeline1
+    {
+        public void Configure(IApplicationBuilder applicationBuilder, IHostingEnvironment hostingEnvironment)
         {
             applicationBuilder.Use(async (httpContext, next) =>
             {
-                Console.WriteLine("Action1_MiddlewarePipeline: Use1-Request");
+                Console.WriteLine("Pipeline1: Middleware1-Request");
                 await next();
-                Console.WriteLine("Action1_MiddlewarePipeline: Use1-Response");
+                Console.WriteLine("Pipeline1: Middleware1-Response");
             });
 
             applicationBuilder.Use(async (httpContext, next) =>
             {
-                Console.WriteLine("Action1_MiddlewarePipeline: Use2-Request");
+                Console.WriteLine("Pipeline1: Middleware2-Request");
                 await next();
-                Console.WriteLine("Action1_MiddlewarePipeline: Use2-Response");
+                Console.WriteLine("Pipeline1: Middleware2-Response");
             });
+
+            if (hostingEnvironment.EnvironmentName == "Development")
+            {
+                applicationBuilder.Use(async (httpContext, next) =>
+                {
+                    Console.WriteLine("Pipeline1: Middleware3-Request");
+                    await next();
+                    Console.WriteLine("Pipeline1: Middleware3-Response");
+                });
+            }
         }
     }
 
-    public class Pipeline2 : IMiddlewarePipelineProvider
+    public class Pipeline2
     {
         public void Configure(IApplicationBuilder applicationBuilder)
         {
             applicationBuilder.Use(async (httpContext, next) =>
             {
-                Console.WriteLine("Action1_MiddlewarePipeline: Use1-Request");
+                Console.WriteLine("Pipeline2: Middleware1-Request");
                 await next();
-                Console.WriteLine("Action1_MiddlewarePipeline: Use1-Response");
+                Console.WriteLine("Pipeline2: Middleware1-Response");
             });
         }
     }
