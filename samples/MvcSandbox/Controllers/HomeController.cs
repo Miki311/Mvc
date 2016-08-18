@@ -7,21 +7,23 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Core.Filters;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace MvcSandbox.Controllers
 {
+    //[Route("{culture}/[controller]/[action]")] - works
     public class HomeController : Controller
     {
-        [MiddlewareFilter(typeof(Pipeline1))]
         public IActionResult Index()
         {
-            return Content("Home.Index");
+            return View();
         }
 
         [MiddlewareFilter(typeof(Pipeline2))]
         public IActionResult Contact()
         {
-            return Content("Home.Contact");
+            return View();
         }
     }
 
@@ -83,6 +85,16 @@ namespace MvcSandbox.Controllers
                 await next();
                 Console.WriteLine("Pipeline2: Middleware1-Response");
             });
+        }
+    }
+
+    public class LocalizationPipeline
+    {
+        public void Configure(IApplicationBuilder appBuilder)
+        {
+            var locOptions = appBuilder.ApplicationServices.GetService<IOptions<RequestLocalizationOptions>>();
+            appBuilder.UseRequestLocalization(locOptions.Value);
+
         }
     }
 }
