@@ -44,12 +44,16 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             _middlewareFilterConfigurationProvider.Configure(middlewarePipelineProviderType, nestedAppBuilder);
 
             // Attach a middleware in the end so that it continues the execution of rest of the MVC filter pipeline
-            nestedAppBuilder.Run((httpContext) =>
+            nestedAppBuilder.Run(async (httpContext) =>
             {
                 var feature = httpContext.Features.Get<IMiddlewareFilterFeature>();
                 var resourceExecutionDelegate = feature.ResourceExecutionDelegate;
 
-                return resourceExecutionDelegate();
+                var resourceExecutedContext = await resourceExecutionDelegate();
+                if (resourceExecutedContext.Exception != null)
+                {
+                    throw resourceExecutedContext.Exception;
+                }
             });
 
             return nestedAppBuilder.Build();

@@ -41,6 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             };
             context.HttpContext.Features.Set<IMiddlewareFilterFeature>(feature);
 
+            // TODO: middleware pipeline could throw exceptions
             return _requestDelegate(httpContext);
         }
     }
